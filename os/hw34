@@ -1,0 +1,177 @@
+Win 10 Home, работа в Windows Terminal.
+ВМ ubuntu 20.04 разворачивается (Vagrant+VirtualBox):
+vagrant init bento/ubuntu-20.04
+vagrant up
+vagrant ssh
+
+1) Установка: https://prometheus.io/docs/guides/node-exporter/
+$ wget https://github.com/prometheus/node_exporter/releases/download/v1.3.0/node_exporter-1.3.0.linux-amd64.tar.gz # скачаем архив
+$ tar xvfz node_exporter-1.3.0.linux-amd64.tar.gz # распакуем
+$ ./node_exporter-1.3.0.linux-amd64/node_exporter # запуск
+$ curl http://localhost:9100/metrics # проверка
+$ ./node_exporter-1.3.0.linux-amd64/node_exporter /usr/local/bin # скопируем бинарный файл
+$ sudo vi /etc/systemd/system/node_exporter.service # создадим unit-файл для node_exporter
+
+[Unit]
+Description = node_exporter
+
+[Service]
+ExecStart =/usr/local/bin/node_exporter $EXTRA_OPTS
+EnvironmentFile=/usr/local/etc/node_exporter.env
+
+[Install]
+WantedBy = multi-user.target
+
+$ sudo vi /usr/local/etc/node_exporter.env # создадим файл для добавления опций
+EXTRA_OPTS="--log.level=info" # в переменную EXTRA_OPTS можно добавлять дополнительные опции для запуска
+
+$ systemctl daemon-reload # перечитаем измененные юнит-файлы самого systemd
+$ sudo systemctl start node_exporter # запустим node_exporter как сервис
+$ sudo systemctl status node_exporter # посмотрим статус - active (running)
+● node_exporter.service - node_exporter
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; disabled; vendor preset: enabled)
+     Active: active (running) since Sat 2021-11-20 17:40:24 UTC; 3s ago
+   Main PID: 1497 (node_exporter)
+      Tasks: 4 (limit: 1112)
+     Memory: 2.3M
+     CGroup: /system.slice/node_exporter.service
+             └─1497 /usr/local/bin/node_exporter --log.level=info
+
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.285Z caller=node_exporter.go:115 level=info collector=thermal_zone
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.285Z caller=node_exporter.go:115 level=info collector=time
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.285Z caller=node_exporter.go:115 level=info collector=timex
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.285Z caller=node_exporter.go:115 level=info collector=udp_queues
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=uname
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=vmstat
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=xfs
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=zfs
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
+
+$ sudo systemctl stop node_exporter # остановим
+$ sudo systemctl status node_exporter # посмотрим статус inactive (dead)
+● node_exporter.service - node_exporter
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; disabled; vendor preset: enabled)
+     Active: inactive (dead)
+
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.285Z caller=node_exporter.go:115 level=info collector=udp_queues
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=uname
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=vmstat
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=xfs
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:115 level=info collector=zfs
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Nov 20 17:40:24 vagrant node_exporter[1497]: ts=2021-11-20T17:40:24.286Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
+Nov 20 17:42:02 vagrant systemd[1]: Stopping node_exporter...
+Nov 20 17:42:02 vagrant systemd[1]: node_exporter.service: Succeeded.
+Nov 20 17:42:02 vagrant systemd[1]: Stopped node_exporter.
+
+$ sudo systemctl enable node_exporter # добавим в автозагрузку
+Created symlink /etc/systemd/system/multi-user.target.wants/node_exporter.service → /etc/systemd/system/node_exporter.service.
+
+# перезапустим ВМ
+PS C:\> vagrant halt 
+PS C:\> vagrant up
+PS C:\> vagrant ssh
+...
+Last login: Sat Nov 20 17:07:07 2021 from 10.0.2.2
+$ systemctl status node_exporter # проверим статус сразу после перезагрузки и входа active (running)
+● node_exporter.service - node_exporter
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2021-11-20 17:43:25 UTC; 47s ago
+   Main PID: 607 (node_exporter)
+      Tasks: 4 (limit: 1112)
+     Memory: 13.8M
+     CGroup: /system.slice/node_exporter.service
+             └─607 /usr/local/bin/node_exporter --log.level=info
+
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=thermal_zone
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=time
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=timex
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=udp_queues
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=uname
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=vmstat
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=xfs
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.214Z caller=node_exporter.go:115 level=info collector=zfs
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.217Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Nov 20 17:43:25 vagrant node_exporter[607]: ts=2021-11-20T17:43:25.221Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
+
+2) Опции для базового мониторинга хоста:
+CPU:
+node_cpu_seconds_total # секунды, потраченные процессорами в каждом режиме
+
+Память:
+node_memory_MemTotal_bytes # общее количество оперативной памяти
+node_memory_MemAvailable_bytes # сколько свободно оперативной памяти для использования
+
+Диск:
+node_filesystem_size_bytes # общее количество места на диске
+node_filesystem_avail_bytes # сколько места на диске свободно для использования
+
+Сеть:
+node_network_receive_bytes_total # количество полученных байтов через интерфейс
+node_network_transmit_bytes_total # количество переданных байтов через интерфейс
+node_network_up # состояние интерфейса
+
+3) Netdata.
+$ sudo apt-get install netdata # установим netdata
+$ sudo vi /etc/netdata/netdata.conf # изменим строчку в файле конфигурации
+bind socket to IP = 0.0.0.0
+# выйдем из ВМ, добавим в Vagrantfile строчку:
+config.vm.network "forwarded_port", guest: 19999, host: 19999 # проброс порта Netdata в ВМ на локальный компьютер
+PS C:\> vagrant reload # перезапустим ВМ
+# откроем в браузере на локальном ПК: localhost:19999.
+https://disk.yandex.ru/i/GvOy_VG8vHGgnw
+# ознакомимся с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам
+
+4) Из вывода dmseg:
+[    0.000000] DMI: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006 # говорит о том, что Desktop Management Interface предоставляет VirtualBox
+[    0.000000] Hypervisor detected: KVM # определен гипервизор Kernel-based Virtual Machine (технология виртуализации)
+[    0.108932] Booting paravirtualized kernel on KVM # закрузка происходит на KVM
+[    2.676910] systemd[1]: Detected virtualization oracle # виртуализация oracle
+Ответ: да, по выводу dmesg можно определить, что ОС запущена не на настоящем железе, а на ВМ
+
+5) Из man proc:
+Этот файл накладывает ограничение на значение, до которого может быть увеличен лимит ресурсов RLIMIT_NOFILE (см. getrlimit(2))
+Значение по умолчанию в этом файле равно 1048576
+Из man 2 getrlimit:
+RLIMIT_NOFILE указывает значение, на единицу превышающее максимальное число файловых дескрипторов, которое может быть открыто процессом
+$ sysctl fs.nr_open
+fs.nr_open = 1048576 # текущее значение fs.nr_open соответствует значению по-умолчанию
+Из ulimit --help:
+Обеспечивает контроль над ресурсами, доступными оболочке, и процессами, которые она создает, в системах, которые допускают такой контроль
+Опция -n максимальное количество открытых файловых дескрипторов.
+$ ulimit -n
+1024 # значение ulimit -n ограничено значением fs.nr_open
+
+6) Зайдем под root:
+$ sudo -i 
+~# screen
+~# unshare -f --pid --mount-proc sleep 1h
+^Z
+[1]+  Stopped                 unshare -f --pid --mount-proc sleep 1h
+~# bg
+[1]+ unshare -f --pid --mount-proc sleep 1h &
+~# ps aux | grep sleep
+root        3963  0.0  0.0   8080   592 pts/2    S    20:39   0:00 unshare -f --pid --mount-proc sleep 1h
+root        3964  0.0  0.0   8076   592 pts/2    S    20:39   0:00 sleep 1h
+root        3966  0.0  0.0   8900   736 pts/2    S+   20:40   0:00 grep --color=auto sleep
+~# nsenter --target 3964 --pid --mount
+/# ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   8076   592 pts/2    S    20:39   0:00 sleep 1h
+root           2  0.1  0.4   9836  4052 pts/2    S    20:41   0:00 -bash
+root          11  0.0  0.3  11492  3384 pts/2    R+   20:42   0:00 ps aux
+Видим, что процесс sleep 1h работает в отдельном неймспейсе с PID 1.
+
+7) :(){ :|:& };: - это классический пример форк-бомбы
+$ :(){ :|:& };: # запустим форк-бомбу
+# система стабилизировалась примерно через 90 сек.
+$ dmesg
+[   95.283600] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-3.scope
+Стабилизации помог контроль максимального количества процессов, которое может создавать пользователь
+Можно регулировать это число с помощью утилиты ulimit
+$ ulimit -u
+3707 # число процессов по-умолчанию
+$ ulimit -u 30 # уменьшим максимальное число процессов для одного пользователя
+$ :(){ :|:& };: # запустим форк-бомбу
+# система стабилизировалась примерно через 12 сек.
