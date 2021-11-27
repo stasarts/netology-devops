@@ -1,0 +1,224 @@
+Win 10 Home, работа в Windows Terminal.
+ВМ ubuntu 20.04 разворачивается (Vagrant+VirtualBox):
+vagrant init bento/ubuntu-20.04
+vagrant up
+vagrant ssh
+
+1) Работа c HTTP через телнет.
+$ telnet stackoverflow.com 80
+Trying 151.101.193.69...
+Connected to stackoverflow.com.
+Escape character is '^]'.
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
+
+HTTP/1.1 301 Moved Permanently
+cache-control: no-cache, no-store, must-revalidate
+location: https://stackoverflow.com/questions
+x-request-guid: 862c1afa-7fdd-4fce-bc78-ee4529e91c03
+feature-policy: microphone 'none'; speaker 'none'
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+Accept-Ranges: bytes
+Date: Sat, 27 Nov 2021 17:07:07 GMT
+Via: 1.1 varnish
+Connection: close
+X-Served-By: cache-ams21063-AMS
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1638032828.514347,VS0,VE76
+Vary: Fastly-SSL
+X-DNS-Prefetch-Control: off
+Set-Cookie: prov=f78c21b4-d13d-61d3-2430-69de017efa8e; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+
+Connection closed by foreign host.
+
+Ответ: полученный HTTP код - 301. Это код состояния,  стандартный код ответа HTTP, получаемый в ответ от сервера в ситуации, когда запрошенный 
+ресурс был на постоянной основе перемещён в новое месторасположение, и указывающий на то, что текущие ссылки, использующие данный URL, должны 
+быть обновлены. Адрес нового месторасположения ресурса указывается в поле Location получаемого в ответ заголовка пакета протокола HTTP.
+Считается лучшей практикой для обновления пользователей с HTTP на HTTPS.
+
+2) Откроем консоль разработчика (DevTools), нажав F12. (браузер Microsoft Edge Version 96.0.1054.34 (Official build) (64-bit)).
+Откроем вкладку Network. Отправим запрос http://stackoverflow.com. Найдем первый ответ HTTP сервера, откроем вкладку Headers.
+
+Ответ:
+- код первого ответа HTTP сервера - 307 Internal Redirect.
+- дольше всего обрабатывался запрос https://stackoverflow.com/ - 437 ms.
+- скриншот браузера https://disk.yandex.ru/i/EOP9Hp-MR7ZmrA
+
+3) Узнать свой ip адрес в интернете.
+- В браузере, с помощью whoer: https://disk.yandex.ru/i/Hd7-ReRMxe-m9Q
+- Win10, PowerShell:
+PS C:\> nslookup myip.opendns.com resolver1.opendns.com
+Server:  dns.opendns.com
+Address:  208.67.222.222
+
+Non-authoritative answer:
+Name:    myip.opendns.com
+Address:  91.232.168.201
+- Ubuntu20.04:
+$ wget -qO- icanhazip.com
+91.232.168.201
+Еще вариант:
+wget -qO- ifconfig.me/ip
+curl ifconfig.me/ip
+
+4) Воспользуемся утилитой whois.
+$ whois 91.232.168.201
+% This is the RIPE Database query service.
+% The objects are in RPSL format.
+%
+% The RIPE Database is subject to Terms and Conditions.
+% See http://www.ripe.net/db/support/db-terms-conditions.pdf
+
+% Note: this output has been filtered.
+%       To receive output for a database update, use the "-B" flag.
+
+% Information related to '91.232.168.0 - 91.232.171.255'
+
+% Abuse contact for '91.232.168.0 - 91.232.171.255' is 'karkavingp@gmail.com'
+
+inetnum:        91.232.168.0 - 91.232.171.255
+netname:        URALNETWORKS-NET
+descr:          IPv4 Address Space in Suhoy Log
+descr:          624800 Gagrina 9, Suhoy Log, Sverdlovsk region
+descr:          Russian Federation
+country:        RU
+org:            ORG-USL9-RIPE
+admin-c:        GK1832-RIPE
+tech-c:         GK1832-RIPE
+status:         ASSIGNED PI
+mnt-by:         RIPE-NCC-END-MNT
+mnt-by:         URNET-MNT
+mnt-routes:     URNET-MNT
+mnt-domains:    URNET-MNT
+created:        2011-11-21T16:36:09Z
+last-modified:  2016-04-14T09:17:53Z
+source:         RIPE
+sponsoring-org: ORG-NGs2-RIPE
+
+organisation:   ORG-USL9-RIPE
+org-name:       LLC "Uralskie Seti"
+org-type:       OTHER
+address:        Sukhoy Log, Sverdlovsk Region, 624800, Russia
+address:        Gagarin str., 9
+abuse-c:        AR20108-RIPE
+mnt-ref:        URNET-MNT
+mnt-by:         URNET-MNT
+created:        2011-11-03T09:32:52Z
+last-modified:  2014-04-01T05:22:37Z
+source:         RIPE # Filtered
+
+person:         Gregory Karkavin
+address:        LLC "Uralskie Seti"
+address:        624800, Gagarina 9, Suhoy Log, Russia
+phone:          +7 (34373) 44807
+nic-hdl:        GK1832-RIPE
+created:        2007-04-06T10:37:11Z
+last-modified:  2011-12-06T04:37:08Z
+source:         RIPE # Filtered
+mnt-by:         UWN-MNT
+
+% Information related to '91.232.168.0/24AS57526'
+
+route:          91.232.168.0/24
+descr:          LLC "Uralskie Seti"
+descr:          IPv4 Address Space in Suhoy Log
+origin:         AS57526
+mnt-by:         URNET-MNT
+created:        2011-12-06T03:58:12Z
+last-modified:  2011-12-06T04:16:17Z
+source:         RIPE
+
+% This query was served by the RIPE Database Query Service version 1.101 (HEREFORD)
+
+Ответ:
+- Ip адрес принадлежит провайдеру LLC "Uralskie Seti"
+- Ip адрес принадлежит автономной системе: AS57526
+
+5) Воспользуемся утилитой traceroute.
+$ traceroute -An 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  10.0.2.2 [*]  0.167 ms  0.149 ms  0.178 ms
+ 2  192.168.0.1 [*]  0.976 ms  1.394 ms  0.733 ms
+ 3  91.232.168.1 [AS57526]  1.641 ms  1.996 ms  2.190 ms
+ 4  10.77.88.1 [*]  4.515 ms  1.579 ms  4.034 ms
+ 5  217.150.57.78 [AS20485]  4.721 ms  4.978 ms  4.708 ms
+ 6  * * *
+ 7  188.43.239.122 [AS20485]  2.612 ms  2.194 ms  2.554 ms
+ 8  188.43.239.9 [AS20485]  18.152 ms  18.381 ms  17.945 ms
+ 9  217.150.55.234 [AS20485]  30.493 ms * *
+10  188.43.10.141 [AS20485]  30.101 ms  30.093 ms  30.084 ms
+11  108.170.250.83 [AS15169]  29.348 ms *
+12  * 142.251.49.24 [AS15169]  44.998 ms *
+13  72.14.238.168 [AS15169]  41.903 ms *
+14  72.14.236.73 [AS15169]  44.416 ms *
+15  * * *
+* * *
+23  * * *
+24  8.8.8.8 [AS15169]  41.207 ms  40.209 ms *
+
+Ответ:
+- пакет проходит через сети:
+192.168.0.1
+91.232.168.1
+10.77.88.1
+217.150.57.78
+188.43.239.122
+188.43.239.9
+217.150.55.234
+188.43.10.141
+108.170.250.83
+142.251.49.24
+72.14.238.168
+72.14.236.73
+- пакет проходит через AS:
+AS57526
+AS20485
+AS15169
+
+6) Воспользуемся утилитой mtr.
+
+My traceroute  [v0.93]
+Ubuntu20-04-test (10.0.2.15)                    2021-11-27T18:25:36+0000
+Keys:  Help   Display mode   Restart statistics   Order of fields   quit
+                                Packets               Pings
+ Host                         Loss%   Snt   Last   Avg  Best  Wrst StDev
+ 1. AS???    10.0.2.2          0.0%    50    1.9   2.1   0.9   3.8   0.6
+ 2. AS???    192.168.0.1       2.0%    50    4.5   5.5   2.7  21.7   3.0
+ 3. AS57526  91.232.168.1      0.0%    50    4.4   7.1   3.1  33.4   5.4
+ 4. AS???    10.77.88.1        6.0%    50    7.2   9.0   5.0  18.7   3.1
+ 5. AS20485  217.150.57.78     2.0%    50   15.5  14.9   7.5  28.5   4.9
+ 6. (waiting for reply)
+ 7. AS20485  188.43.239.122   10.0%    50   32.5  27.9  21.5  39.3   4.8
+ 8. AS20485  188.43.239.9      8.0%    50   33.7  28.9  21.7  51.1   5.2
+ 9. AS20485  217.150.55.234    4.0%    50   52.2  49.9  40.7  82.7   7.6
+10. AS20485  188.43.10.141    10.0%    50   55.2  49.6  40.7 108.8  10.2
+11. AS15169  108.170.250.34    4.0%    50   52.6  48.8  41.2  63.0   5.1
+12. AS15169  142.251.49.24     6.0%    50   73.7  58.0  50.7  73.7   4.9
+13. AS15169  72.14.238.168     6.0%    50   59.5  59.5  49.6 108.8  11.5
+14. AS15169  72.14.236.73     12.0%    50   63.9  63.5  51.2 225.8  27.3
+15. (waiting for reply)
+(waiting for reply)
+23. (waiting for reply)
+24. AS15169  8.8.8.8           8.2%    49   61.9  58.0  48.8  96.4   7.3
+
+Ответ: самая большая задержка (Avg) на участке 14. AS15169  72.14.236.73 63.5ms.
+
+7) За доменное имя dns.google отвечают:
+$ dig +short NS dns.google
+ns3.zdns.google.
+ns2.zdns.google.
+ns1.zdns.google.
+ns4.zdns.google.
+A записи:
+$ dig +short A dns.google
+8.8.4.4
+8.8.8.8
+
+8) Воспользуемся утилитой dig.
+$ dig -x 8.8.4.4 | grep -A1 ANSWER | tail -1
+4.4.8.8.in-addr.arpa.   6919    IN      PTR     dns.google.
+$ dig -x 8.8.8.8 | grep -A1 ANSWER | tail -1
+8.8.8.8.in-addr.arpa.   6886    IN      PTR     dns.google.
+
+Ответ: для обоих ip - dns.google.
