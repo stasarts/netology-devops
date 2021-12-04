@@ -1,0 +1,90 @@
+Win 10 Home, работа в Windows Terminal.
+ВМ ubuntu 20.04 разворачивается (Vagrant+VirtualBox):
+vagrant init bento/ubuntu-20.04
+vagrant up
+vagrant ssh
+
+1) Подключимся к публичному маршрутизатору в интернет.
+$ telnet route-views.routeviews.org
+
+Найдем маршрут к публичному IP.
+route-views>show ip route 91.232.168.145
+Routing entry for 91.232.168.0/24
+  Known via "bgp 6447", distance 20, metric 0
+  Tag 6939, type external
+  Last update from 64.71.137.241 2w0d ago
+  Routing Descriptor Blocks:
+  * 64.71.137.241, from 64.71.137.241, 2w0d ago
+      Route metric is 0, traffic share count is 1
+      AS Hops 3
+      Route tag 6939
+      MPLS label: none
+	  
+route-views>show bgp 91.232.168.145
+BGP routing table entry for 91.232.168.0/24, version 1374238886
+Paths: (23 available, best #23, table default)
+  Not advertised to any peer
+  Refresh Epoch 1
+  6939 20485 57526
+    64.71.137.241 from 64.71.137.241 (216.218.252.164)
+      Origin IGP, localpref 100, valid, external, best
+      path 7FE00D137498 RPKI State not found
+      rx pathid: 0, tx pathid: 0x0
+Вывод одного маршрута(лучшего #23, используется по-умолчанию) доступно 23.
+
+2) Зайдем за суперюзера:
+$ sudo su
+Добавим модуль dummy:
+# echo "dummy" >> /etc/modules
+$ echo "options dummy numdummies=2" > /etc/modprobe.d/dummy.conf
+Добавим несколько статических маршрутов:
+# nano /etc/network/interfaces
+auto dummy0
+iface dummy0 inet static
+  address 10.0.2.100/24
+  pre-up ip link add dummy0 type dummy
+  post-down ip link del dummy0
+
+iface dummy0 inet static
+  address 10.0.2.101/24
+
+iface dummy0 inet static
+  address 10.0.2.102/24
+Проверим таблицу маршрутизации:
+$ ip r
+default via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100
+10.0.2.0/24 dev dummy0 proto kernel scope link src 10.0.2.100
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15
+10.0.2.2 dev eth0 proto dhcp scope link src 10.0.2.15 metric 100
+
+3) Проверим открытые TCP порты:
+ss -ltupn | grep tcp
+tcp    LISTEN  0       4096      127.0.0.53%lo:53          0.0.0.0:*
+tcp    LISTEN  0       128             0.0.0.0:22          0.0.0.0:*
+tcp    LISTEN  0       4096            0.0.0.0:111         0.0.0.0:*
+tcp    LISTEN  0       128                [::]:22             [::]:*
+tcp    LISTEN  0       4096               [::]:111            [::]:*
+53 порт - использует служба DNS
+22 порт - использует SSH
+111 порт - использует portmap
+
+4) Проверим открытые UDP порты:
+$ ss -ltupn | grep udp
+udp    UNCONN  0       0         127.0.0.53%lo:53          0.0.0.0:*
+udp    UNCONN  0       0        10.0.2.15%eth0:68          0.0.0.0:*
+udp    UNCONN  0       0               0.0.0.0:111         0.0.0.0:*
+udp    UNCONN  0       0                  [::]:111            [::]:*
+53 порт - использует служба DNS
+68 порт - использует DHCP
+
+5) Хорошие L3-схемы содержат следующую информацию:
+- подсети:
+    VLAN ID (все)
+    названия VLAN'ов
+    сетевые адреса и маски (префиксы)
+    L3-устройства
+- маршрутизаторы, межсетевые экраны (далее МСЭ) и VPN-шлюзы (как минимум)
+    наиболее значимые серверы (например, DNS и пр.)
+    ip-адреса этих серверов
+    логические интерфейсы
+Пример, нарисованный с помощью diagrams.net: https://disk.yandex.ru/i/zbmSeWzC-e69Mg.
