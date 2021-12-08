@@ -1,0 +1,181 @@
+1) Установим Bitwarden плагин для браузера Microsoft Edge Version 96.0.1054.43 (Official build) (64-bit).
+Зарегестрируем и сохраним несколько паролей: https://disk.yandex.ru/i/-e6lWRUHgKD1MA.
+
+2) Установим Google authenticator на мобильный телефон (Android).
+Настроим вход в Bitwarden акаунт через Google authenticator OTP: https://disk.yandex.ru/i/r4wgYyT4tHCJ3Q
+
+3) Установим apache2:
+$ sudo apt update
+$ sudo apt install apache2
+Запустим и добавим в автозагрузку:
+$ systemctl start apache2
+$ systemctl enable apache2
+Настроим firewall ufw:
+$ sudo ufw allow 'WWW Full' (открывает 80 и 443 порт)
+Rule added
+Rule added (v6)
+Проверим, что порты открыты:
+$ sudo ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+WWW Full                   ALLOW       Anywhere
+WWW Full (v6)              ALLOW       Anywhere (v6)
+
+Создадим самоподписной сертификат:
+$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+Generating a RSA private key
+.............+++++
+.........+++++
+writing new private key to '/etc/ssl/private/apache-selfsigned.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:RU
+State or Province Name (full name) [Some-State]:Sverdlovsk obl.
+Locality Name (eg, city) []:Yekaterinburg
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:avt0m8 llc.
+Organizational Unit Name (eg, section) []:dev
+Common Name (e.g. server FQDN or YOUR name) []:188.120.253.83
+Email Address []:avt0m8@yandex.ru
+
+- openssl: это базовый инструмент командной строки для создания и управления сертификатами OpenSSL, ключами и другими файлами.
+- req: данная субкоманда указывает, что мы хотим использовать управление запросами подписи сертификатов X.509 (CSR). 
+  X.509 — это стандарт инфраструктуры открытых ключей, используемый SSL и TLS для управления ключами и сертификатами.
+  Вы хотим создать новый сертификат X.509, и поэтому используем эту субкоманду.
+- x509: это дополнительно изменяет предыдущую субкоманду, сообщая утилите, что мы хотим создать самоподписанный сертификат, а не сгенерировать запрос на подпись сертификата, как обычно происходит.
+- nodes: этот параметр указывает OpenSSL пропустить опцию защиты сертификата с помощью пароля.
+  Для чтения этого файла при запуске сервера без вмешательства пользователя нам потребуется Apache.
+  Кодовая фраза может предотвратить это, поскольку нам придется вводить ее после каждого перезапуска.
+- days 365: данный параметр устанавливает срок, в течение которого сертификат будет считаться действительным.
+  Здесь мы устанавливаем срок действия в один год.
+- newkey rsa:2048: указывает, что мы хотим генерировать новый сертификат и новый ключ одновременно.
+  Мы не создали требуемый ключ для подписи сертификата на предыдущем шаге, и поэтому нам нужно создать его вместе с сертификатом.
+  Часть rsa:2048 указывает, что мы создаем ключ RSA длиной 2048 бит.
+- keyout: эта строка указывает OpenSSL, где мы разместим создаваемый закрытый ключ.
+- out: данный параметр указывает OpenSSL, куда поместить создаваемый сертификат.
+
+Изменим файл виртуального хоста:
+$ sudo nano /etc/apache2/sites-available/default-ssl.conf
+<IfModule mod_ssl.c>
+        <VirtualHost _default_:443>
+                ServerAdmin avt0m8@yandex
+                ServerName 188.120.253.83
+
+                DocumentRoot /var/www/html
+
+                ErrorLog ${APACHE_LOG_DIR}/error.log
+                CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+                SSLEngine on
+
+                SSLCertificateFile      /etc/ssl/certs/apache-selfsigned.crt
+                SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+
+                <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                                SSLOptions +StdEnvVars
+                </FilesMatch>
+                <Directory /usr/lib/cgi-bin>
+                                SSLOptions +StdEnvVars
+                </Directory>
+
+        </VirtualHost>
+</IfModule>
+
+Перенаправим нешифрованный трафик HTTP (80 порт) на HTTPS (443 порт):
+$ sudo nano /etc/apache2/sites-available/000-default.conf
+Redirect "/" "https://188.120.253.83/"
+
+Активируем виртуальный хост SSL:
+$ sudo a2ensite default-ssl
+
+Перезагрузим Apache2:
+$ sudo systemctl restart apache2
+
+Тестовый сайт доступен по адресу: https://188.120.253.83/
+https://disk.yandex.ru/i/cXASRSLqdaNScA
+
+4) Скачаем утилиту для проверки TLS:
+$ git clone --depth 1 https://github.com/drwetter/testssl.sh.git
+$ cd testssl.sh
+Запустим проверку TLS пробного сайта, созданного в п.3:
+./testssl.sh https://188.120.253.83/ >> test_tls
+Записанный отчет:
+https://disk.yandex.ru/d/bo7c1IU1ZJy4wA
+Из отчета можно отметить(проваленные пункты):
+ subjectAltName (SAN)         missing (NOT ok) -- Browsers are complaining
+ Trust (hostname)             via CN only -- Browsers are complaining
+ Chain of trust               NOT ok (self signed)
+ Overall Grade                T
+ Grade cap reasons            Grade capped to T. Issues with the chain of trust (self signed)
+Все это говорит о "ненадежности" из-за использования самоподписного сертификата.
+
+5) Сгенерируем пару ключей:
+$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): id_fvds_deb10
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in id_fvds_deb10
+Your public key has been saved in id_fvds_deb10.pub
+The key fingerprint is:
+SHA256:myppXUBAn90ZvXCCB8UgxI3BLPq8cbRIzQrh75xiSxw vagrant@Ubuntu20-04-test
+The key's randomart image is:
++---[RSA 3072]----+
+|   .o*++o*o.     |
+|  . ..*+o.=oo    |
+| . o =o ..o+ .   |
+|  + . =     .    |
+|  E* + oS        |
+| . .B o .o       |
+|  oo B .o        |
+| .o O ..         |
+| ..+ ..          |
++----[SHA256]-----+
+Скопируем ключ на удаденный сервер:
+$ ssh-copy-id -i ~/.ssh/id_fvds_deb10.pub admin@188.120.253.83 -p 53223
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/vagrant/.ssh/id_fvds_deb10.pub"
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh -p '53223' 'admin@188.120.253.83'"
+and check to make sure that only the key(s) you wanted were added.
+Подключимся к удаленному серверу:
+ssh -i ~/.ssh/id_fvds_deb10.pub admin@188.120.253.83
+
+6) Настроим файл конфигурации ssh клиента:
+$ sudo nano /etc/ssh/ssh_config
+Include /etc/ssh/ssh_config.d/*.conf
+    Host 188.120.253.83
+    IdentityFile ~/.ssh/id_linuxbase_1vds
+    Port 53223
+    User admin
+    SendEnv LANG LC_*
+    HashKnownHosts yes
+    GSSAPIAuthentication yes
+Теперь можно зайти на удаленный сервер только по имени:
+$ ssh 188.120.253.83
+
+7) Установим утилиту tcpdump:
+$ sudo apt install tcpdump
+Соберем дамп трафика 100 пакетов в формате pcap:
+$ sudo tcpdump -nei any -c 100 -w 100packets.pcap
+tcpdump: listening on any, link-type LINUX_SLL (Linux cooked), capture size 262144 bytes
+100 packets captured
+117 packets received by filter
+0 packets dropped by kernel
+
+-n - не отображать доменные имена
+-e - выводить информацию уровня соединения для каждого пакета, это может быть полезно, например, для отображения MAC адреса
+-i - имя интерфейса для перехвата пакетов. Вы можете захватывать пакеты со всех интерфейсов, для этого укажите any
+-c - закрыть программу после перехвата n-ого количества пакетов
+-w - записать вывод в файл
+
+Файл дампа трафика: https://disk.yandex.ru/d/FL0KSAyb4EYY6Q
+Откроем файл pcap в Wireshark: https://disk.yandex.ru/i/OA69v1YPuqxToQ
