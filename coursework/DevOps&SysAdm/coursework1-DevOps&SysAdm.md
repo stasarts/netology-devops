@@ -348,10 +348,10 @@ http {
 127.0.0.1	vault.example.com
 ```
 Откроем в браузере Edge на хостовой машине Win10 адрес: https://vault.example.com:
-![](https://github.com/stasarts/netology-devops/blob/main/coursework/DevOps%26SysAdm/cert.png)
+![](https://github.com/stasarts/netology-devops/blob/main/coursework/DevOps%26SysAdm/secure.png)  
 Видим, что "соединение безопасно".  
 Откроем сведения о сертификате:
-![](https://github.com/stasarts/netology-devops/blob/main/coursework/DevOps%26SysAdm/secure.png)  
+![](https://github.com/stasarts/netology-devops/blob/main/coursework/DevOps%26SysAdm/cert.png)  
 Видим всю цепочкус от корневого сертификата.
 
 # 9) Создадим скрипт, который будет генерировать новый сертификат в vault.
