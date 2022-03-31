@@ -86,7 +86,7 @@
 
 8) > Если всё отработало в рамках ожидания - выгрузить схемы workflow для импорта в XML. Файлы с workflow приложить к решению задания.
 
-- [Workflow для bug](./assets/for bugz.xml)
-- [Workflow для остальных типов задач](./assets/other tasks.xml)
+- [Workflow для bug](https://github.com/stasarts/netology-devops/blob/main/cicd/assets/for%20bugz.xml)
+- [Workflow для остальных типов задач](https://github.com/stasarts/netology-devops/blob/main/cicd/assets/other%20tasks.xml)
 
 ---
