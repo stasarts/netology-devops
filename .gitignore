@@ -1,1 +1,4 @@
 *.bak
+.idea
+/cicd/example/.scannerwork
+/cicd/mvn/target
