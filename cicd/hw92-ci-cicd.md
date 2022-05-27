@@ -553,6 +553,6 @@ drwxrwxr-x 3 stasarts stasarts 4096 мая 22 17:14 ../
 
 4. В ответе присылаем исправленный файл `pom.xml`.
 ```shell
-[Исправленный pom.xml](./mvn/pom.xml)
+[Исправленный pom.xml](mvn/pom.xml)
 ```
 ---
