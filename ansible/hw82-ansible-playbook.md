@@ -35,7 +35,7 @@
 
 1-2. Создадим свой собственный публичный [репозиторий на github](https://github.com/stasarts/example-ansible-base), скачаем [playbook](./playbook/playbook/) и перенесем его в свой репозиторий: 
 <p align="center">
-  <img width="1850" height="1000" src="./assets/.png">
+  <img width="1850" height="900" src="./assets/playbook1.png">
 </p>
 
 3. Подготовим хосты в соответствии с группами из предпоготовленного playbook.
@@ -360,9 +360,11 @@ elastic-centos7            : ok=13   changed=0    unreachable=0    failed=0    s
 ```
 
 9. Подготовим README.md файл по `playbook`. В нём опишем: что делает playbook, какие у него есть параметры и теги.
+
 [README.md с ответами](https://github.com/stasarts/example-ansible-playbook/blob/main/README.md)
 
 10. Готовый playbook выложите в свой репозиторий, в ответ предоставьте ссылку на него.
+
 [Репозиторий с изменённым `playbook` и заполненным `README.md`](https://github.com/stasarts/example-ansible-playbook)
 
 ---
