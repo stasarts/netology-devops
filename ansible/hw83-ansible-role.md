@@ -985,8 +985,11 @@ exit
 `OK`
 
 11. В ответ приведите ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
+
 [Репозиторий с playbook](https://github.com/stasarts/example-ansible-role)
+
 [Репозиторий с ролью elasticsearch](https://github.com/stasarts/example-ansible-elastic-role)
+
 [Репозиторий с ролью kibana](https://github.com/stasarts/example-ansible-kibana-role)
 
 ---
