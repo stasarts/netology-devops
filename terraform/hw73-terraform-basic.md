@@ -291,6 +291,8 @@ locals {
 <details>
   <summary>Результат</summary>
 
+* [Ссылка на репозиторий с конфигурацией.](https://github.com/stasarts/example-terraform-yc-ws)
+
 * Вывод команды `terraform workspace list`:
 ```shell
 ~/terraform/yc-terra-workspaces$ terraform workspace list
