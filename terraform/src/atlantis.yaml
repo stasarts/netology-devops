@@ -1,0 +1,16 @@
+version: 3
+projects:
+- dir: .
+  # Надо запускать планирование и аплай для двух воркспейсов stage и prod.
+  # https://www.runatlantis.io/docs/repo-level-atlantis-yaml.html#supporting-terraform-workspaces
+  workspace: stage
+  autoplan:
+    # Необходимо включить автопланирование при изменении любых файлов *.tf.
+    # https://www.runatlantis.io/docs/repo-level-atlantis-yaml.html#configuring-planning
+    when_modified: ["../modules/**/*.tf", "*.tf*"]
+- dir: .
+  # Надо запускать планирование и аплай для двух воркспейсов stage и prod.
+  workspace: prod
+  autoplan:
+    # Необходимо включить автопланирование при изменении любых файлов *.tf.
+    when_modified: ["../modules/**/*.tf", "*.tf*"]
