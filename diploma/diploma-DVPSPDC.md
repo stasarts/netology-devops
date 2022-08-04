@@ -1461,12 +1461,36 @@ ansible-gitlab-runner
 8 directories, 46 files
 ```
 
+* Создан `pipeline`, который осуществляет `deploy` при создании тега (например, v1.0.0) в репозиторий с WordPress:
+
+![img.png](assets/diploma14.png)
+
+* Сделаем `commit` в репозитории `wordpress`. (`deploy` только по `commit` не происходит):
+
+![img.png](assets/diploma15.png)
+
+* Сделаем еще один `commit` в репозитории `wordpress`:
+
+![img.png](assets/diploma16.png)
+
+* Сделаем `tag` в репозитории `wordpress`:
+
+![img.png](assets/diploma17.png)
+
+* Убедимся, что `deploy-job` успешно выполнилась при добавлении `tag` (по второму `commit`):
+
+![img.png](assets/diploma18.png)
+
+* Убедимся, что изменения на `https://www.avt0m8.ru` применились:
+
+![img.png](assets/diploma19.png)
+
 </details>
 
 <details>
   <summary>7. Установка Prometheus, Alert Manager, Node Exporter и Grafana</summary>
 
-* Gitlab Runner устанавливается ansible-role `monitoring`:
+* Prometheus, Alert Manager, Node Exporter и Grafana устанавливаются ansible-role `monitoring`:
 
 ```shell
 $ tree monitoring
@@ -1492,30 +1516,6 @@ monitoring
 
 5 directories, 13 files
 ```
-
-* Создан `pipeline`, который осуществляет `deploy` при создании тега (например, v1.0.0) в репозиторий с WordPress:
-
-![img.png](assets/diploma14.png)
-
-* Сделаем `commit` в репозитории `wordpress`. (`deploy` только по `commit` не происходит):
-
-![img.png](assets/diploma15.png)
-
-* Сделаем еще один `commit` в репозитории `wordpress`:
-
-![img.png](assets/diploma16.png)
-
-* Сделаем `tag` в репозитории `wordpress`:
-
-![img.png](assets/diploma17.png)
-
-* Убедимся, что `deploy-job` успешно выполнилась при добавлении `tag` (по второму `commit`):
-
-![img.png](assets/diploma18.png)
-
-* Убедимся, что изменения на `https://www.avt0m8.ru` применились:
-
-![img.png](assets/diploma19.png)
 
 </details>
 
